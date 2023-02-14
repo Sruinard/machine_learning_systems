@@ -33,7 +33,7 @@ class Review:
             verified_purchase=data["verified_purchase"],
             id=data["id"]
         )
-        
+
 
 def convert_unix_to_iso_date(unix_date: int) -> str:
     return datetime.datetime.fromtimestamp(unix_date).isoformat()
@@ -124,16 +124,16 @@ class CosmosDBRepository(DBRepository):
         for review in reviews:
             container.upsert_item(dataclasses.asdict(review))
 
-    def get_review(self, uid: str) -> List[Review]:
+    def get_review(self, id: str) -> List[Review]:
         client = CosmosClient(self.endpoint, self.key)
         database = client.get_database_client(self.database)
         container = database.get_container_client(self.container)
-        query = "SELECT * FROM c WHERE c.uid = @uid"
-        params = { "uid": uid }
+        query = "SELECT * FROM c WHERE c.id = @id"
+        params = [{ "name": "@id", "value": id }]
         reviews = []
         for review in container.query_items(query=query, parameters=params, enable_cross_partition_query=True):
             reviews.append(Review.from_dict(review))
-        return reviews
+        return reviews[0]
 
     def get_all_reviews(self) -> List[Review]:
         client = CosmosClient(self.endpoint, self.key)
