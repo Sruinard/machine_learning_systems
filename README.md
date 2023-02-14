@@ -37,3 +37,4 @@ Our objective is to help users sift through a wide variety of user reviews for a
 | --------------------- | ---------------------------------------------------------------- |
 
 - High level architecture:
+
