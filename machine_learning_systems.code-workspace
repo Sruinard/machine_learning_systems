@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "src/services/chat_api"
+		},
+		{
+			"path": "src/services/searchpal"
+		},
+		{
+			"path": "src/services/products"
+		}
+	],
+	"settings": {}
+}

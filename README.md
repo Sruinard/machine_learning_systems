@@ -38,3 +38,6 @@ Our objective is to help users sift through a wide variety of user reviews for a
 
 - High level architecture:
 
+## Data acquisition
+
+We'll start of by acquiring the data from [here](https://nijianmo.github.io/amazon/index.html) and [here](https://jmcauley.ucsd.edu/data/amazon/) and start with the small dataset for experimentation. In particular, we'll be using the `5-core books` and the `5-core electronics` datasets.
