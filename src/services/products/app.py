@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 import repository
 import config
 import os
@@ -40,17 +40,17 @@ async def ingest(event: dict):
     success, n_items_ingested = bulk_ingest.ingest(blob)
     return JSONResponse(status_code=200, content={"success": success, "n_items_ingested": n_items_ingested})
 
-@app.get("/products")
+@app.get("/products", response_model=List[repository.Product])
 def get_products():
     repo = repository.FireStoreRepository()
     products = repo.get_all_products()
-    return JSONResponse(status_code=200, content=products)
+    return products
 
-@app.get("/products/{asin}")
+@app.get("/products/{asin}", response_model=repository.Product)
 def get_product(asin: str):
     repo = repository.FireStoreRepository()
     product = repo.get_product(asin)
-    return JSONResponse(status_code=200, content=product)
+    return product
 
 @app.get("/")
 def read_root():

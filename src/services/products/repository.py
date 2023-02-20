@@ -1,9 +1,10 @@
 import requests
 import dataclasses
 import datetime
-from typing import List
+from typing import List, Optional, Union
 import uuid
 from google.cloud import firestore
+
 
 
 # given the following sample data, create a dataclass for each of the following
@@ -31,15 +32,17 @@ class Product:
     asin: str
     title: str
     feature: List[str]
-    description: str
-    price: float
-    image_url: str
-    image_url_high_res: str
-    also_buy: List[str]
-    also_view: List[str]
-    rank: dict
+    description: Union[str,List[str]]
+    price: str
+    # dataclass field is None, string or list of strings
+    image_url: Optional[Union[str, List[str]]]
+    # image_url: str 
+    image_url_high_res: Optional[Union[None, str, List[str]]]
+    also_buy: Optional[Union[None, str,List[str]]]
+    also_view: Optional[Union[None, str,List[str]]]
+    rank: Optional[Union[None, str, List[str]]]
     brand: str
-    category: List[List[str]]
+    category: List[str]
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -49,8 +52,8 @@ class Product:
             feature=data['feature'],
             description=data['description'],
             price=data['price'],
-            image_url=data['imageURL'],
-            image_url_high_res=data['imageURLHighRes'],
+            image_url=data['image_url'],
+            image_url_high_res=data['image_url_high_res'],
             also_buy=data['also_buy'],
             also_view=data['also_view'],
             rank=data['rank'],
@@ -90,6 +93,6 @@ class FireStoreRepository:
         return [Product.from_dict(doc.to_dict()) for doc in docs]
 
     def get_all_products(self):
-        docs = self.db.collection('products').stream()
+        docs = self.db.collection('products').limit(25).stream()
         return [Product.from_dict(doc.to_dict()) for doc in docs]
         
