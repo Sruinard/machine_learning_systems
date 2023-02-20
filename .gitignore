@@ -130,3 +130,6 @@ dmypy.json
 
 # gitignore node_modules
 **/node_modules/
+
+**/*.whl
+**/ml_index
