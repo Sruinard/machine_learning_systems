@@ -1,18 +1,18 @@
 # create a fastapi with an endpoint to index the products and write to gcs
 # and an endpoint to make lookup similar products based on a query
 
+import os
+from typing import List
+
+import requests
+import tensorflow_text  # import required
+import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI, WebSocket
-from pydantic import BaseModel
-import tensorflow_text
-from typing import Optional, List
-import os
-import uvicorn
-import json
-import requests
+
+import config
+import repository
+
 import predict
 
 app = FastAPI()
@@ -23,10 +23,9 @@ origins = [
 ]
 
 
-LOAD_INDEX = True
-SIM_MODEL = predict.create_similarity_model()
-if LOAD_INDEX:
-    predict.load_index(SIM_MODEL, "ml_index")
+if config.SearchConfig.load_model_and_index:
+    SIM_MODEL = predict.create_similarity_model()
+    predict.load_index(SIM_MODEL, config.SearchConfig.index)
 
 
 
@@ -38,18 +37,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/index")
+# add endpoint to listen to pub/sub messages
+@app.post("/pubsub")
+def pubsub(event, context):
+    repository.event_handler(event, context)
+
+
+# add an endpoint which loads all products from storage and indexes them
+@app.post("/jobs/index")
 def index_database():
-    # retrieve all products from api:
-    URL = "http://localhost:8000"
-    response = requests.get(
-        URL + "/products")
-    products = response.json()
-    predict.create_index(products, SIM_MODEL, "ml_index")
+    predict.create_index_from_historical_product_data(SIM_MODEL, config.SearchConfig.index)
+
+    repository.index_database(SIM_MODEL)
+    return {"message": "indexing complete"}
+
+
 
 @app.post("/search")
 def search(query: str) -> List[str]:
-    results = predict.find(query, SIM_MODEL, 5)
+    results = predict.find(query, SIM_MODEL, 3)
     return results
 
 if __name__ == "__main__":

@@ -4,8 +4,11 @@ from tensorflow_similarity.models import SimilarityModel
 import tensorflow_similarity as tfsim
 from typing import Generator
 from google.cloud import storage
+from google.cloud.storage import Blob
+import repository
 import glob
 import os
+import json
 
 
 class TFSentenceTransformer(tf.keras.layers.Layer):
@@ -67,56 +70,52 @@ def create_similarity_model(model_id='sentence-transformers/all-MiniLM-L6-v2'):
     sim_model = tfsim.models.SimilarityModel(tokenizer_input, outputs)
     return sim_model
 
-def create_index(products: Generator, sim_model: tfsim.models.SimilarityModel, index_dest: str):
+def preprocessing(product: dict):
+    product_id = product["asin"]
+    text = f"<TITLE> {product['title']} </TITLE> <DESCRIPTION> {' '.join(product['description'])} </DESCRIPTION> <FEATURE> {' '.join(product['feature'])} </FEATURE>"
+    return product_id, text
+
+
+def create_index_from_historical_product_data(sim_model: tfsim.models.SimilarityModel, index_dest: str, historical_data_bucket_name: str = "searchpal_datasets"):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(historical_data_bucket_name)
+    products = bucket.list_blobs(prefix='products')
     sim_model.create_index()
     # batch ingest products
+    indexing_ids_and_texts = []
     indexing_batch = []
-    for product in products:
-        index_data =" ".join([product["title"]] + product["description"] + product['feature'])
-        indexing_batch.append(index_data)
+    for blob in products:
+        data = blob.download_as_string()
+        # convert the string to a dictionary
+        data = json.loads(data)
+        # add the product to the index
+        product_id, text = preprocessing(data)
+        indexing_ids_and_texts.append((product_id, text))
+        indexing_batch.append(text)
 
         if len(indexing_batch) == 1000:
             try: 
-                sim_model.index(x=tf.constant(indexing_batch), data=indexing_batch)
+                sim_model.index(x=tf.constant(indexing_batch), data=indexing_ids_and_texts)
             except Exception as e:
                 print(e)
             indexing_batch = []
     # save index
-    sim_model.index(x=tf.constant(indexing_batch), data=indexing_batch)
-
+    sim_model.index(x=tf.constant(indexing_batch), data=indexing_ids_and_texts)
     sim_model.save_index(index_dest)
+    # upload index to gcs
+    repository.upload_index(index_dest)
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket("searchpal-ml-artifacts")
-    # upload blob to gcs from filename
-    for str_path_file in glob.glob(f'{index_dest}/**/*'):
-        print(f'Uploading {str_path_file}')
-        # The name of file on GCS once uploaded
-        blob = bucket.blob(str_path_file)
-        # The content that will be uploaded
-        blob.upload_from_filename(str_path_file)
-        print(f'Path in GCS: {str_path_file}')
 
     
 def load_index(sim_model: tfsim.models.SimilarityModel, index_dest: str ):
 
     # download index from gcs
-    storage_client = storage.Client()
-    bucket = storage_client.bucket("searchpal-ml-artifacts")
-
-    # list blobs using prefix
-    blobs = bucket.list_blobs(prefix=index_dest)
-    for blob in blobs:
-        print(f'Downloading {blob.name}')
-        if not os.path.exists(os.path.dirname(blob.name)):
-            os.makedirs(os.path.dirname(blob.name))
-        blob.download_to_filename(blob.name)
-        print(f'Path in GCS: {blob.name}')
-
+    repository.download_index(index_dest)
+    # load index in memory
     sim_model.load_index(index_dest)
     return sim_model
 
-def find(query: str, sim_model: tfsim.models.SimilarityModel, top_k: int = 5):
+def find(query: str, sim_model: tfsim.models.SimilarityModel, top_k: int = 3):
     # query the index
     results = sim_model.lookup(x=tf.constant([query]), k=top_k)[0]
     product_descriptions = [str(result.data) for result in results]
