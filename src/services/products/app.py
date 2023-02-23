@@ -12,6 +12,10 @@ import json
 import external_bulk_ingest
 
 
+
+
+
+
 app = FastAPI()
 
 origins = [
@@ -30,27 +34,34 @@ app.add_middleware(
 class Event(BaseModel):
     bucket: str
     name: str
+    is_compressed: bool = False
 
-@app.post("/products/ingest")
+@app.post("/products/ingest/bulk")
 async def ingest(event: dict):
     bucket, name = event['bucket'], event["name"]
 
     bulk_ingest = external_bulk_ingest.BulkIngest()
-    blob = bulk_ingest.get_blob_reference(bucket, name)
-    success, n_items_ingested = bulk_ingest.ingest(blob)
+    if event["is_compressed"]:
+        blob = bulk_ingest.get_blob_reference(bucket, name)
+        success, n_items_ingested = bulk_ingest.ingest(blob)
+    else:
+        success, n_items_ingested = bulk_ingest.ingest_from_file(bucket, name)
     return JSONResponse(status_code=200, content={"success": success, "n_items_ingested": n_items_ingested})
-
-@app.get("/products", response_model=List[repository.Product])
-def get_products():
-    repo = repository.FireStoreRepository()
-    products = repo.get_all_products()
-    return products
 
 @app.get("/products/{asin}", response_model=repository.Product)
 def get_product(asin: str):
     repo = repository.FireStoreRepository()
     product = repo.get_product(asin)
     return product
+
+# endpoint which accepts list of asins and returns list of products
+@app.get("/products?asins={asins}", response_model=List[repository.Product])
+def get_products(asins: str):
+    asins = asins.split(",")
+    repo = repository.FireStoreRepository()
+    products = repo.get_products(asins)
+    return products
+
 
 @app.get("/")
 def read_root():

@@ -133,3 +133,4 @@ dmypy.json
 
 **/*.whl
 **/ml_index
+**/data

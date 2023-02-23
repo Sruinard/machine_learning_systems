@@ -1,0 +1,55 @@
+# create a docker compose file for the searchpal application
+# this file will be used to start the application
+# the application will be started in the background
+# the application will be started with the name searchpal
+# the application will be started with the port 8080
+# the application will be started with the environment variable SEARCHPAL_DB_HOST
+# the application will be started with the environment variable SEARCHPAL_DB_PORT
+# the application will be started with the environment variable SEARCHPAL_DB_NAME
+# the application will be started with the environment variable SEARCHPAL_DB_USER
+# the application will be started with the environment variable SEARCHPAL_DB_PASSWORD
+# the application will be started with the environment variable SEARCHPAL_DB_SCHEMA
+# the application will be started with the environment variable SEARCHPAL_DB_SSL
+# the application will be started with the environment variable SEARCHPAL_DB_SSL_MODE
+
+version: "3.9"  # optional since v1.27.0
+services:
+  # searchpal:
+  #   image: searchpal:latest
+  #   container_name: searchpal
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  # search:
+  #   build:
+  #     context: ./services/search
+  #     dockerfile: Dockerfile
+  #   image: search:latest
+  #   container_name: search
+  #   restart: always
+  #   ports:
+  #     - "8081:8080"
+  products:
+    build:
+      context: ./services/products
+      dockerfile: Dockerfile
+    image: products:latest
+    container_name: products
+    restart: always
+    ports:
+      - "8082:8080"
+  # chat:
+  #   build:
+  #     context: ./services/chat
+  #     dockerfile: Dockerfile
+  #   image: chat:latest
+  #   container_name: chat
+  #   restart: always
+  #   ports:
+  #     - "8083:8080"
+  pubsub:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:316.0.0-emulators
+    ports:
+      - "8085:8085"
+    container_name: gcloud-pubsub_test_node
+    entrypoint: gcloud beta emulators pubsub start --project test-project --host-port 0.0.0.0:8085
