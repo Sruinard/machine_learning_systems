@@ -4,6 +4,12 @@ This repository is a guide to building Machine Learning systems.
 
 ## Understand the problem and establish scope
 
+
+### Objectives:
+- Implement an MLOps pipeline to train and deploy models in production in which a data engine is responsible for improving the capabilities of the model.
+- Have a feedback loop to let users provide feedback on the quality of the system.
+- Build a system that can help users sift through a wide variety of documents in real-time using natural language and provide answers to their questions.
+
 ### functional requirements (i.e. features):
 
 Our objective is to help users sift through a wide variety of user reviews for a given set of products in real-time using natural language. A typical user is interested in two particular features:

@@ -4,10 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "src/services/search"
-		},
-		{
-			"path": "src/services/products"
+			"path": "src/data_engine"
 		}
 	],
 	"settings": {}

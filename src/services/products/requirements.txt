@@ -1,7 +1,0 @@
-python-dotenv
-fastapi[all]
-requests
-google-cloud-storage
-google-cloud-firestore
-pytest
-google-cloud-pubsub
