@@ -1,0 +1,297 @@
+{
+  "cells": [
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install --upgrade pip\n",
+        "!pip install jax flax optax tensorflow-text tfx==1.12 tensorflow-datasets transformers keras-nlp markupsafe"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": "Requirement already satisfied: pip in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (23.0.1)\nRequirement already satisfied: jax in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (0.4.5)\nRequirement already satisfied: flax in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (0.6.6)\nRequirement already satisfied: optax in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (0.1.4)\nRequirement already satisfied: tensorflow-text in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (2.11.0)\nRequirement already satisfied: tfx==1.12 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (1.12.0)\nRequirement already satisfied: tensorflow-datasets in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (4.8.3)\nRequirement already satisfied: transformers in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (4.16.0)\nRequirement already satisfied: keras-nlp in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (0.4.1)\nRequirement already satisfied: markupsafe in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (2.1.2)\nRequirement already satisfied: apache-beam[gcp]<3,>=2.40 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (2.45.0)\nRequirement already satisfied: google-api-core<1.33 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.32.0)\nRequirement already satisfied: tfx-bsl<1.13.0,>=1.12.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.0)\nRequirement already satisfied: ml-metadata<1.13.0,>=1.12.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.0)\nRequirement already satisfied: click<8,>=7 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (7.1.2)\nRequirement already satisfied: docker<5,>=4.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (4.4.4)\nRequirement already satisfied: google-cloud-aiplatform<1.18,>=1.6.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.17.1)\nRequirement already satisfied: grpcio<2,>=1.28.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.51.1)\nRequirement already satisfied: tensorflow<2.12,>=2.11.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (2.11.0)\nRequirement already satisfied: ml-pipelines-sdk==1.12.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.0)\nRequirement already satisfied: tensorflow-data-validation<1.13.0,>=1.12.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.0)\nRequirement already satisfied: packaging<21,>=20 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (20.9)\nRequirement already satisfied: pyyaml<6,>=3.12 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (5.4.1)\nRequirement already satisfied: google-apitools<1,>=0.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (0.5.31)\nRequirement already satisfied: tensorflow-transform<1.13.0,>=1.12.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.0)\nRequirement already satisfied: portpicker<2,>=1.3.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.5.2)\nRequirement already satisfied: absl-py<2.0.0,>=0.9 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.4.0)\nRequirement already satisfied: kubernetes<13,>=10.0.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (12.0.1)\nRequirement already satisfied: numpy<2,>=1.16 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.21.6)\nRequirement already satisfied: pyarrow<7,>=6 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (6.0.1)\nRequirement already satisfied: keras-tuner<2,>=1.0.4 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.1.3)\nRequirement already satisfied: tensorflow-serving-api!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,!=2.4.*,!=2.5.*,!=2.6.*,!=2.7.*,!=2.8.*,<3,>=1.15 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (2.11.0)\nRequirement already satisfied: google-cloud-bigquery<3,>=2.26.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (2.34.4)\nRequirement already satisfied: google-api-python-client<2,>=1.8 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (1.12.11)\nRequirement already satisfied: protobuf<4,>=3.13 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (3.19.6)\nRequirement already satisfied: tensorflow-model-analysis<0.44.0,>=0.43.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (0.43.0)\nRequirement already satisfied: jinja2<4,>=2.7.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (3.1.2)\nRequirement already satisfied: attrs<22,>=19.3.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (21.4.0)\nRequirement already satisfied: tensorflow-hub<0.13,>=0.9.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (0.12.0)\nRequirement already satisfied: typing-extensions<5,>=3.10.0.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tfx==1.12) (4.4.0)\nRequirement already satisfied: opt-einsum in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jax) (3.3.0)\nRequirement already satisfied: scipy>=1.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jax) (1.5.3)\nRequirement already satisfied: rich>=11.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from flax) (13.1.0)\nRequirement already satisfied: orbax in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from flax) (0.1.3)\nRequirement already satisfied: msgpack in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from flax) (1.0.4)\nRequirement already satisfied: matplotlib in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from flax) (3.2.1)\nRequirement already satisfied: tensorstore in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from flax) (0.1.33)\nRequirement already satisfied: chex>=0.1.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from optax) (0.1.6)\nRequirement already satisfied: jaxlib>=0.1.37 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from optax) (0.4.4)\nRequirement already satisfied: etils[enp,epath]>=0.9.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (1.0.0)\nRequirement already satisfied: tensorflow-metadata in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (1.12.0)\nRequirement already satisfied: dm-tree in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (0.1.8)\nRequirement already satisfied: importlib-resources in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (5.10.0)\nRequirement already satisfied: tqdm in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (4.64.1)\nRequirement already satisfied: wrapt in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (1.12.1)\nRequirement already satisfied: requests>=2.19.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (2.28.1)\nRequirement already satisfied: promise in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (2.3)\nRequirement already satisfied: termcolor in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (2.1.1)\nRequirement already satisfied: toml in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (0.10.2)\nRequirement already satisfied: psutil in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-datasets) (5.9.4)\nRequirement already satisfied: filelock in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from transformers) (3.8.2)\nRequirement already satisfied: regex!=2019.12.17 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from transformers) (2022.10.31)\nRequirement already satisfied: tokenizers!=0.11.3,>=0.10.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from transformers) (0.13.2)\nRequirement already satisfied: huggingface-hub<1.0,>=0.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from transformers) (0.11.1)\nRequirement already satisfied: sacremoses in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from transformers) (0.0.53)\nRequirement already satisfied: crcmod<2.0,>=1.7 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.7)\nRequirement already satisfied: fasteners<1.0,>=0.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.18)\nRequirement already satisfied: python-dateutil<3,>=2.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.8.2)\nRequirement already satisfied: pymongo<4.0.0,>=3.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (3.13.0)\nRequirement already satisfied: pytz>=2018.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2022.5)\nRequirement already satisfied: objsize<0.7.0,>=0.6.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.6.1)\nRequirement already satisfied: dill<0.3.2,>=0.3.1.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.3.1.1)\nRequirement already satisfied: zstandard<1,>=0.18.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.20.0)\nRequirement already satisfied: pydot<2,>=1.2.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.4.2)\nRequirement already satisfied: proto-plus<2,>=1.7.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.22.2)\nRequirement already satisfied: httplib2<0.21.0,>=0.8 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.20.4)\nRequirement already satisfied: hdfs<3.0.0,>=2.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.7.0)\nRequirement already satisfied: fastavro<2,>=0.23.6 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.7.3)\nRequirement already satisfied: cloudpickle~=2.2.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.2.1)\nRequirement already satisfied: orjson<4.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (3.8.7)\nRequirement already satisfied: google-cloud-datastore<2,>=1.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.15.5)\nRequirement already satisfied: google-cloud-bigquery-storage<2.17,>=2.6.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.16.2)\nRequirement already satisfied: google-auth<3,>=1.18.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.35.0)\nRequirement already satisfied: google-cloud-spanner<4,>=3.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (3.26.0)\nRequirement already satisfied: google-cloud-pubsub<3,>=2.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.13.11)\nRequirement already satisfied: google-auth-httplib2<0.2.0,>=0.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.1.0)\nRequirement already satisfied: google-cloud-bigtable<2,>=0.31.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.7.3)\nRequirement already satisfied: google-cloud-pubsublite<2,>=1.2.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.6.0)\nRequirement already satisfied: cachetools<5,>=3.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (4.2.4)\nRequirement already satisfied: google-cloud-core<3,>=0.28.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (2.3.2)\nRequirement already satisfied: google-cloud-dlp<4,>=3.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (3.9.2)\nRequirement already satisfied: google-cloud-recommendations-ai<0.8.0,>=0.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.7.1)\nRequirement already satisfied: google-cloud-language<2,>=1.3.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.3.2)\nRequirement already satisfied: google-cloud-vision<4,>=2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (3.1.4)\nRequirement already satisfied: google-cloud-videointelligence<2,>=1.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.16.3)\nRequirement already satisfied: toolz>=0.9.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from chex>=0.1.5->optax) (0.12.0)\nRequirement already satisfied: websocket-client>=0.32.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from docker<5,>=4.1->tfx==1.12) (1.4.2)\nRequirement already satisfied: six>=1.4.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from docker<5,>=4.1->tfx==1.12) (1.16.0)\nRequirement already satisfied: zipp in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from etils[enp,epath]>=0.9.0->tensorflow-datasets) (3.11.0)\nRequirement already satisfied: setuptools>=40.3.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-api-core<1.33->tfx==1.12) (49.6.0)\nRequirement already satisfied: googleapis-common-protos<2.0dev,>=1.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-api-core<1.33->tfx==1.12) (1.57.0)\nRequirement already satisfied: uritemplate<4dev,>=3.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-api-python-client<2,>=1.8->tfx==1.12) (3.0.1)\nRequirement already satisfied: oauth2client>=1.4.12 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-apitools<1,>=0.5->tfx==1.12) (4.1.3)\nRequirement already satisfied: google-cloud-storage<3.0.0dev,>=1.32.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-aiplatform<1.18,>=1.6.2->tfx==1.12) (2.7.0)\nRequirement already satisfied: google-cloud-resource-manager<3.0.0dev,>=1.3.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-aiplatform<1.18,>=1.6.2->tfx==1.12) (1.6.3)\nRequirement already satisfied: google-resumable-media<3.0dev,>=0.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-bigquery<3,>=2.26.0->tfx==1.12) (2.4.1)\nRequirement already satisfied: ipython in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from keras-tuner<2,>=1.0.4->tfx==1.12) (7.34.0)\nRequirement already satisfied: kt-legacy in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from keras-tuner<2,>=1.0.4->tfx==1.12) (1.0.4)\nRequirement already satisfied: tensorboard in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from keras-tuner<2,>=1.0.4->tfx==1.12) (2.11.2)\nRequirement already satisfied: certifi>=14.05.14 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from kubernetes<13,>=10.0.1->tfx==1.12) (2022.9.24)\nRequirement already satisfied: urllib3>=1.24.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from kubernetes<13,>=10.0.1->tfx==1.12) (1.26.13)\nRequirement already satisfied: requests-oauthlib in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from kubernetes<13,>=10.0.1->tfx==1.12) (1.3.1)\nRequirement already satisfied: pyparsing>=2.0.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from packaging<21,>=20->tfx==1.12) (3.0.9)\nRequirement already satisfied: charset-normalizer<3,>=2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from requests>=2.19.0->tensorflow-datasets) (2.1.1)\nRequirement already satisfied: idna<4,>=2.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from requests>=2.19.0->tensorflow-datasets) (3.4)\nRequirement already satisfied: pygments<3.0.0,>=2.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from rich>=11.1->flax) (2.13.0)\nRequirement already satisfied: commonmark<0.10.0,>=0.9.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from rich>=11.1->flax) (0.9.1)\nRequirement already satisfied: libclang>=13.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (15.0.6.1)\nRequirement already satisfied: gast<=0.4.0,>=0.2.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (0.3.3)\nRequirement already satisfied: astunparse>=1.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (1.6.3)\nRequirement already satisfied: h5py>=2.9.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (3.7.0)\nRequirement already satisfied: tensorflow-io-gcs-filesystem>=0.23.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (0.31.0)\nRequirement already satisfied: tensorflow-estimator<2.12,>=2.11.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (2.11.0)\nRequirement already satisfied: keras<2.12,>=2.11.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (2.11.0)\nRequirement already satisfied: google-pasta>=0.1.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (0.2.0)\nRequirement already satisfied: flatbuffers>=2.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow<2.12,>=2.11.0->tfx==1.12) (22.11.23)\nRequirement already satisfied: pandas<2,>=1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-data-validation<1.13.0,>=1.12.0->tfx==1.12) (1.1.5)\nRequirement already satisfied: pyfarmhash<0.4,>=0.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-data-validation<1.13.0,>=1.12.0->tfx==1.12) (0.3.2)\nRequirement already satisfied: joblib>=1.2.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-data-validation<1.13.0,>=1.12.0->tfx==1.12) (1.2.0)\nRequirement already satisfied: ipywidgets<8,>=7 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (7.7.1)\nRequirement already satisfied: kiwisolver>=1.0.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from matplotlib->flax) (1.4.4)\nRequirement already satisfied: cycler>=0.10 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from matplotlib->flax) (0.11.0)\nRequirement already satisfied: cached_property in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from orbax->flax) (1.5.2)\nRequirement already satisfied: wheel<1.0,>=0.23.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from astunparse>=1.6.0->tensorflow<2.12,>=2.11.0->tfx==1.12) (0.37.1)\nRequirement already satisfied: rsa<5,>=3.1.4 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-auth<3,>=1.18.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (4.9)\nRequirement already satisfied: pyasn1-modules>=0.2.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-auth<3,>=1.18.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.2.8)\nRequirement already satisfied: grpc-google-iam-v1<0.13dev,>=0.12.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-bigtable<2,>=0.31.1->apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.12.6)\nRequirement already satisfied: grpcio-status>=1.16.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-pubsub<3,>=2.1.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (1.48.2)\nRequirement already satisfied: overrides<7.0.0,>=6.0.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-pubsublite<2,>=1.2.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (6.5.0)\nRequirement already satisfied: sqlparse>=0.3.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-cloud-spanner<4,>=3.0.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.4.3)\nRequirement already satisfied: google-crc32c<2.0dev,>=1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from google-resumable-media<3.0dev,>=0.6.0->google-cloud-bigquery<3,>=2.26.0->tfx==1.12) (1.5.0)\nRequirement already satisfied: docopt in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from hdfs<3.0.0,>=2.1.0->apache-beam[gcp]<3,>=2.40->tfx==1.12) (0.6.2)\nRequirement already satisfied: pexpect>4.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (4.8.0)\nRequirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (3.0.28)\nRequirement already satisfied: jedi>=0.16 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.18.0)\nRequirement already satisfied: traitlets>=4.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (5.7.1)\nRequirement already satisfied: decorator in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (5.1.1)\nRequirement already satisfied: matplotlib-inline in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.1.6)\nRequirement already satisfied: backcall in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.2.0)\nRequirement already satisfied: pickleshare in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.7.5)\nRequirement already satisfied: jupyterlab-widgets>=1.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.1.1)\nRequirement already satisfied: ipykernel>=4.5.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (6.8.0)\nRequirement already satisfied: widgetsnbextension~=3.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (3.6.1)\nRequirement already satisfied: ipython-genutils~=0.2.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.2.0)\nRequirement already satisfied: pyasn1>=0.1.7 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from oauth2client>=1.4.12->google-apitools<1,>=0.5->tfx==1.12) (0.4.8)\nRequirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (1.8.1)\nRequirement already satisfied: markdown>=2.6.8 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (3.4.1)\nRequirement already satisfied: tensorboard-data-server<0.7.0,>=0.6.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (0.6.1)\nRequirement already satisfied: werkzeug>=1.0.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (2.2.2)\nRequirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (0.4.6)\nRequirement already satisfied: oauthlib>=3.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from requests-oauthlib->kubernetes<13,>=10.0.1->tfx==1.12) (3.2.2)\nRequirement already satisfied: nest-asyncio in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.5.6)\nRequirement already satisfied: jupyter-client<8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (7.4.9)\nRequirement already satisfied: debugpy<2.0,>=1.0.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.6.4)\nRequirement already satisfied: tornado<7.0,>=4.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (6.2)\nRequirement already satisfied: parso<0.9.0,>=0.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jedi>=0.16->ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.8.3)\nRequirement already satisfied: importlib-metadata>=4.4 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from markdown>=2.6.8->tensorboard->keras-tuner<2,>=1.0.4->tfx==1.12) (5.1.0)\nRequirement already satisfied: ptyprocess>=0.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from pexpect>4.3->ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.7.0)\nRequirement already satisfied: wcwidth in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0->ipython->keras-tuner<2,>=1.0.4->tfx==1.12) (0.2.6)\nRequirement already satisfied: notebook>=4.4.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (6.5.2)\nRequirement already satisfied: jupyter-core>=4.9.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-client<8.0->ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (5.1.0)\nRequirement already satisfied: pyzmq>=23.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-client<8.0->ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (24.0.1)\nRequirement already satisfied: entrypoints in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-client<8.0->ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.4)\nRequirement already satisfied: nbclassic>=0.4.7 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.4.8)\nRequirement already satisfied: nbconvert>=5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (7.2.8)\nRequirement already satisfied: terminado>=0.8.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.17.1)\nRequirement already satisfied: nbformat in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (5.7.3)\nRequirement already satisfied: prometheus-client in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.15.0)\nRequirement already satisfied: Send2Trash>=1.8.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.8.0)\nRequirement already satisfied: argon2-cffi in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (21.3.0)\nRequirement already satisfied: platformdirs>=2.5 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-core>=4.9.2->jupyter-client<8.0->ipykernel>=4.5.1->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.6.0)\nRequirement already satisfied: notebook-shim>=0.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.2.2)\nRequirement already satisfied: jupyter-server>=1.8 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.0.1)\nRequirement already satisfied: nbclient>=0.5.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.7.2)\nRequirement already satisfied: bleach in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (5.0.1)\nRequirement already satisfied: beautifulsoup4 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (4.11.1)\nRequirement already satisfied: jupyterlab-pygments in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.2.2)\nRequirement already satisfied: pandocfilters>=1.4.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.5.0)\nRequirement already satisfied: defusedxml in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.7.1)\nRequirement already satisfied: mistune<3,>=2.0.3 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.0.5)\nRequirement already satisfied: tinycss2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.2.1)\nRequirement already satisfied: jsonschema>=2.6 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (4.17.3)\nRequirement already satisfied: fastjsonschema in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.16.2)\nRequirement already satisfied: argon2-cffi-bindings in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from argon2-cffi->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (21.2.0)\nRequirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.19.2)\nRequirement already satisfied: pkgutil-resolve-name>=1.3.10 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.3.10)\nRequirement already satisfied: jupyter-events>=0.4.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-server>=1.8->nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.5.0)\nRequirement already satisfied: jupyter-server-terminals in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-server>=1.8->nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.4.2)\nRequirement already satisfied: anyio<4,>=3.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-server>=1.8->nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (3.6.2)\nRequirement already satisfied: cffi>=1.0.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from argon2-cffi-bindings->argon2-cffi->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.15.1)\nRequirement already satisfied: soupsieve>1.2 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from beautifulsoup4->nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.3.2.post1)\nRequirement already satisfied: webencodings in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from bleach->nbconvert>=5->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.5.1)\nRequirement already satisfied: sniffio>=1.1 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from anyio<4,>=3.1.0->jupyter-server>=1.8->nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.3.0)\nRequirement already satisfied: pycparser in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from cffi>=1.0.1->argon2-cffi-bindings->argon2-cffi->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.21)\nRequirement already satisfied: python-json-logger in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jupyter-events>=0.4.0->jupyter-server>=1.8->nbclassic>=0.4.7->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.0.4)\nRequirement already satisfied: isoduration in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (20.11.0)\nRequirement already satisfied: webcolors>=1.11 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.12)\nRequirement already satisfied: fqdn in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.5.1)\nRequirement already satisfied: jsonpointer>1.13 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (2.3)\nRequirement already satisfied: rfc3986-validator>0.1.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.1.1)\nRequirement already satisfied: rfc3339-validator in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (0.1.4)\nRequirement already satisfied: uri-template in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.2.0)\nRequirement already satisfied: arrow>=0.15.0 in /anaconda/envs/azureml_py38/lib/python3.8/site-packages (from isoduration->jsonschema>=2.6->nbformat->notebook>=4.4.1->widgetsnbextension~=3.6.0->ipywidgets<8,>=7->tensorflow-model-analysis<0.44.0,>=0.43.0->tfx==1.12) (1.2.3)\n"
+        }
+      ],
+      "execution_count": 11,
+      "metadata": {
+        "jupyter": {
+          "outputs_hidden": false
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import os\n",
+        "\n",
+        "import jax\n",
+        "import jax.numpy as jnp\n",
+        "import flax\n",
+        "import transformers\n",
+        "import optax\n",
+        "from flax.training import train_state\n",
+        "from tfx import v1 as tfx\n",
+        "from tfx.orchestration.experimental.interactive.interactive_context import InteractiveContext\n",
+        "import tensorflow_datasets as tfds\n"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": "2023-03-10 15:04:08.728971: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer.so.7'; dlerror: libnvinfer.so.7: cannot open shared object file: No such file or directory\n2023-03-10 15:04:08.729068: W tensorflow/compiler/xla/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libnvinfer_plugin.so.7'; dlerror: libnvinfer_plugin.so.7: cannot open shared object file: No such file or directory\n2023-03-10 15:04:08.729080: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Cannot dlopen some TensorRT libraries. If you would like to use Nvidia GPU with TensorRT, please make sure the missing libraries mentioned above are installed properly.\n"
+        }
+      ],
+      "execution_count": 3,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460654430
+        }
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Objective\n",
+        "We'll be building a data engine for a generative machine learning model. The objective is to create a data driven approach to improve the machine learning model and along the way learn about MLOps, Feature Engineering, Model Serving and Model Analysis. In the end, you should be able to use this model to write more information dense sentences and improve the way you speak and write. Let's see how to achieve that."
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## The dataset\n",
+        "We are going to need some data to train on as an initial starting point. After exploring several datasets, I settled on using the [Asset Dataset](https://www.tensorflow.org/datasets/catalog/asset). "
+      ],
+      "metadata": {
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# This is the root directory for your TFX pip package installation.\n",
+        "ROOT_DIR = os.path.abspath(\".\")\n",
+        "\n",
+        "ARTIFACT_DIR = os.path.join(ROOT_DIR, \"pipelines/artifacts\")\n",
+        "MODEL_SERVING_DIR = os.path.join(ROOT_DIR, \"serving_model/generative_dense_writing\")\n",
+        "DATA_DIR = os.path.join(ROOT_DIR, \"datasets/curated/\"); \n",
+        "if not os.path.exists(DATA_DIR):\n",
+        "    os.makedirs(DATA_DIR)\n",
+        "DATASET_NAME = \"asset/ratings\"\n"
+      ],
+      "outputs": [],
+      "execution_count": 4,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460654490
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "ds, ds_info = tfds.load(DATASET_NAME, split=\"full\", with_info=True)\n",
+        "df = tfds.as_dataframe(ds, ds_info=ds_info)"
+      ],
+      "outputs": [],
+      "execution_count": 5,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460657509
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.head()"
+      ],
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "execution_count": 12,
+          "data": {
+            "text/plain": "   aspect                                           original  \\\n0       1  b\"Pauline returned in the game boy remake of d...   \n1       1  b'Both names became defunct in 2007 when they ...   \n2       2  b'Both names became defunct in 2007 when they ...   \n3       0  b'Jeanne Marie-Madeleine Demessieux( February ...   \n4       0  b'Brunstad has several fast food restaurants, ...   \n\n   original_sentence_id  rating  \\\n0                   350      96   \n1                    23     100   \n2                    23      64   \n3                   213      78   \n4                   107      77   \n\n                                      simplification  worker_id  \n0  b'It was released in the game boy remake of do...         25  \n1  b'Both names became obsolete in 2007 when they...         15  \n2  b'Both names became obsolete in 2007 when they...         15  \n3  b'Jeanne Demessieux( born Paris, 13 February 1...         12  \n4  b'Brunstad has food restaurants, coffee, a res...         28  ",
+            "text/html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>aspect</th>\n      <th>original</th>\n      <th>original_sentence_id</th>\n      <th>rating</th>\n      <th>simplification</th>\n      <th>worker_id</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>1</td>\n      <td>b\"Pauline returned in the game boy remake of d...</td>\n      <td>350</td>\n      <td>96</td>\n      <td>b'It was released in the game boy remake of do...</td>\n      <td>25</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>1</td>\n      <td>b'Both names became defunct in 2007 when they ...</td>\n      <td>23</td>\n      <td>100</td>\n      <td>b'Both names became obsolete in 2007 when they...</td>\n      <td>15</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>2</td>\n      <td>b'Both names became defunct in 2007 when they ...</td>\n      <td>23</td>\n      <td>64</td>\n      <td>b'Both names became obsolete in 2007 when they...</td>\n      <td>15</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>0</td>\n      <td>b'Jeanne Marie-Madeleine Demessieux( February ...</td>\n      <td>213</td>\n      <td>78</td>\n      <td>b'Jeanne Demessieux( born Paris, 13 February 1...</td>\n      <td>12</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>0</td>\n      <td>b'Brunstad has several fast food restaurants, ...</td>\n      <td>107</td>\n      <td>77</td>\n      <td>b'Brunstad has food restaurants, coffee, a res...</td>\n      <td>28</td>\n    </tr>\n  </tbody>\n</table>\n</div>"
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": 12,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460783698
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "df.loc[\"original_sentence_id\" == 350]"
+      ],
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "KeyError",
+          "evalue": "False",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m/tmp/ipykernel_34235/2302137415.py\u001b[0m in \u001b[0;36m<cell line: 1>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mdf\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mloc\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"original_sentence_id\"\u001b[0m \u001b[0;34m==\u001b[0m \u001b[0;36m350\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;32m/anaconda/envs/azureml_py38/lib/python3.8/site-packages/pandas/core/indexing.py\u001b[0m in \u001b[0;36m__getitem__\u001b[0;34m(self, key)\u001b[0m\n\u001b[1;32m    877\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    878\u001b[0m             \u001b[0mmaybe_callable\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mcom\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mapply_if_callable\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mobj\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 879\u001b[0;31m             \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_getitem_axis\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mmaybe_callable\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0maxis\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    880\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    881\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_is_scalar_access\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mkey\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mTuple\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/anaconda/envs/azureml_py38/lib/python3.8/site-packages/pandas/core/indexing.py\u001b[0m in \u001b[0;36m_getitem_axis\u001b[0;34m(self, key, axis)\u001b[0m\n\u001b[1;32m   1108\u001b[0m         \u001b[0;31m# fall thru to straight lookup\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1109\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_validate_key\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1110\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_get_label\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0maxis\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1111\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1112\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_get_slice_axis\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mslice_obj\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mslice\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mint\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/anaconda/envs/azureml_py38/lib/python3.8/site-packages/pandas/core/indexing.py\u001b[0m in \u001b[0;36m_get_label\u001b[0;34m(self, label, axis)\u001b[0m\n\u001b[1;32m   1057\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_get_label\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mlabel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mint\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1058\u001b[0m         \u001b[0;31m# GH#5667 this will fail if the label is not present in the axis.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1059\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mobj\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mxs\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mlabel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maxis\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0maxis\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1060\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1061\u001b[0m     \u001b[0;32mdef\u001b[0m \u001b[0m_handle_lowerdim_multi_index_axis0\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtup\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0mTuple\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/anaconda/envs/azureml_py38/lib/python3.8/site-packages/pandas/core/generic.py\u001b[0m in \u001b[0;36mxs\u001b[0;34m(self, key, axis, level, drop_level)\u001b[0m\n\u001b[1;32m   3491\u001b[0m             \u001b[0mloc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mnew_index\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc_level\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mdrop_level\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mdrop_level\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3492\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3493\u001b[0;31m             \u001b[0mloc\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mindex\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3494\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3495\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0misinstance\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mloc\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mndarray\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/anaconda/envs/azureml_py38/lib/python3.8/site-packages/pandas/core/indexes/range.py\u001b[0m in \u001b[0;36mget_loc\u001b[0;34m(self, key, method, tolerance)\u001b[0m\n\u001b[1;32m    356\u001b[0m                 \u001b[0;32mexcept\u001b[0m \u001b[0mValueError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    357\u001b[0m                     \u001b[0;32mraise\u001b[0m \u001b[0mKeyError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 358\u001b[0;31m             \u001b[0;32mraise\u001b[0m \u001b[0mKeyError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    359\u001b[0m         \u001b[0;32mreturn\u001b[0m \u001b[0msuper\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmethod\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mmethod\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtolerance\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mtolerance\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    360\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mKeyError\u001b[0m: False"
+          ]
+        }
+      ],
+      "execution_count": 15,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460809048
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "PIPELINE_NAME = \"generative_dense_writing\"\n",
+        "context = InteractiveContext(PIPELINE_NAME, pipeline_root=ARTIFACT_DIR)"
+      ],
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": "WARNING:absl:InteractiveContext metadata_connection_config not provided: using SQLite ML Metadata database at /mnt/batch/tasks/shared/LS_root/mounts/clusters/deeplearning/code/Users/stefruinard/GenerativeML/pipelines/artifacts/metadata.sqlite.\n"
+        }
+      ],
+      "execution_count": 6,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        },
+        "gather": {
+          "logged": 1678460661915
+        }
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {
+        "jupyter": {
+          "source_hidden": false,
+          "outputs_hidden": false
+        },
+        "nteract": {
+          "transient": {
+            "deleting": false
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python38-azureml",
+      "language": "python",
+      "display_name": "Python 3.8 - AzureML"
+    },
+    "language_info": {
+      "name": "python",
+      "version": "3.8.10",
+      "mimetype": "text/x-python",
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "pygments_lexer": "ipython3",
+      "nbconvert_exporter": "python",
+      "file_extension": ".py"
+    },
+    "microsoft": {
+      "ms_spell_check": {
+        "ms_spell_check_language": "en"
+      },
+      "host": {
+        "AzureML": {
+          "notebookHasBeenCompleted": true
+        }
+      }
+    },
+    "kernel_info": {
+      "name": "python38-azureml"
+    },
+    "nteract": {
+      "version": "nteract-front-end@1.0.0"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}
